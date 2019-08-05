@@ -1,0 +1,51 @@
+CC =  g++ 
+CCFLAGS =  -g -Wall -Wextra -std=c++14
+#生成静态库文件命令
+AR = ar rc
+
+#依赖库文件
+LIB =  -lpthread
+
+#当前目录和LIB_INC目录下查找原文件
+LIB_INC = /libserial
+INC = -I. -I$(LIB_INC)
+
+#调用shell脚本，创建静态库文件和执行文件目录
+LIB_DIR = ./lib/
+BIN_DIR = ./bin/
+$(shell mkdir -p ${LIB_DIR})
+$(shell mkdir -p ${BIN_DIR})
+
+OBJECT =SerialPort.o SerialStream.o SerialStreamBuf.o
+SRC_OBJECT =SerialPort.cpp SerialStream.cpp SerialStreamBuf.cpp
+
+#静态库文件变量
+LIB_OBJECT = libserialport.a
+# BIN_OBJECT = main
+
+TEST_LIB = -L./lib -lserialport
+
+all:$(LIB_OBJECT) $(BIN_OBJECT)
+
+$(OBJECT):$(SRC_OBJECT)
+	$(CC) $(CCFLAGS) -c -o $@ $< 
+
+$(LIB_OBJECT):$(OBJECT)
+	$(AR) $@ $^
+	#将生成的文件移动到对应的文件夹
+	mv $(LIB_OBJECT) $(LIB_DIR)
+	#清除中间文件
+	- rm -rf *.o
+
+# $(BIN_OBJECT): main.o
+# 	$(CC) $(CCFLAGS) -o $@ $^ $(TEST_LIB)
+# 	mv $(BIN_OBJECT) $(BIN_DIR)
+
+# #编译所有.cpp文件为.o文件
+.cpp.o: 
+	@echo $<
+	- rm -f *.o
+	$(CC) $(CCFLAGS) -c -o $@ $< 
+	#$(CC) $(CCFLAGS)  -c -o $*.o $*.cpp $(INC) $(LIB)
+clean: 
+	- rm -rf *.o $(LIB_DIR)/$(LIB_OBJECT) $(BIN_DIR)$(BIN_OBJECT)

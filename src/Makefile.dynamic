@@ -1,0 +1,49 @@
+CC =  g++ 
+CCFLAGS =  -g -Wall -Wextra -std=c++14
+
+SHARED = -shared -o
+FPIC = -fPIC -c
+
+#依赖库文件
+LIB =  -lpthread
+
+#当前目录和LIB_INC目录下查找原文件
+LIB_INC = /libserial
+INC = -I. -I$(LIB_INC)
+
+#调用shell脚本，创建动态库文件和执行文件目录
+LIB_DIR = ./lib/
+BIN_DIR = ./bin/
+$(shell mkdir -p ${LIB_DIR})
+$(shell mkdir -p ${BIN_DIR})
+
+OBJECT =SerialPort.o SerialStream.o SerialStreamBuf.o
+SRC_OBJECT =SerialPort.cpp SerialStream.cpp SerialStreamBuf.cpp
+
+#动态库文件变量
+LIB_OBJECT = libserialport.so
+# BIN_OBJECT = main
+
+TEST_LIB = -L./lib/ -lserialport
+
+all:$(LIB_OBJECT) $(BIN_OBJECT)
+$(OBJECT):$(SRC_OBJECT)
+	$(CC) $(FPIC) $(SRC_OBJECT)
+
+$(LIB_OBJECT):$(OBJECT)
+	$(CC) $(CCFLAGS) $(SHARED) -fPIC -o $@ $^
+	mv $(LIB_OBJECT) $(LIB_DIR)
+	#清除中间文件
+	- rm -rf *.o
+	
+# $(BIN_OBJECT): main.o
+# 	$(CC) $(CCFLAGS) -o $@ $^ $(TEST_LIB)
+# 	mv $(BIN_OBJECT) $(BIN_DIR)
+
+# main.o: main.c
+# 	$(CC) $(CCFLAGS) -c $^
+
+clean: 
+	- rm -rf *.o  $(LIB_DIR)/$(LIB_OBJECT) $(BIN_DIR)$(BIN_OBJECT)
+#运行./main 前需调用下列命令设置动态加载路径
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/libserial/lib
